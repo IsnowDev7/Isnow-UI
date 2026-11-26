@@ -126,8 +126,8 @@ function Library:CreateWindow(cfg)
 
 	local DockBar = Instance.new("Frame")
 	DockBar.Name = "LandscapeDockBar"
-	DockBar.Size = UDim2.new(0, 360, 0, 48)
-	DockBar.Position = UDim2.new(0.5, -180, 1, -72)
+	DockBar.Size = UDim2.new(0, 360, 0, 50)
+	DockBar.Position = UDim2.new(0.5, -180, 1, -74)
 	DockBar.BackgroundColor3 = Color3.fromRGB(18, 18, 22)
 	DockBar.BorderSizePixel = 0
 	DockBar.Parent = ScreenGui
@@ -136,8 +136,8 @@ function Library:CreateWindow(cfg)
 	local DockGradient = Instance.new("UIGradient", DockBar)
 	DockGradient.Rotation = 90
 	DockGradient.Color = ColorSequence.new({
-		ColorSequenceKeypoint.new(0, Color3.fromRGB(26, 26, 32)),
-		ColorSequenceKeypoint.new(1, Color3.fromRGB(15, 15, 18))
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(28, 28, 34)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(16, 16, 19))
 	})
 
 	local DockStroke = Instance.new("UIStroke", DockBar)
@@ -166,7 +166,7 @@ function Library:CreateWindow(cfg)
 	local TabsContainer = Instance.new("Frame")
 	TabsContainer.Name = "TabsContainer"
 	TabsContainer.Size = UDim2.new(1, -126, 1, 0)
-	TabsContainer.Position = UDim2.new(0, 72, 0, 0)
+	TabsContainer.Position = UDim2.new(0, 70, 0, 0)
 	TabsContainer.BackgroundTransparency = 1
 	TabsContainer.Parent = DockBar
 
@@ -179,8 +179,8 @@ function Library:CreateWindow(cfg)
 
 	local AvatarWrapper = Instance.new("Frame")
 	AvatarWrapper.Name = "AvatarWrapper"
-	AvatarWrapper.Size = UDim2.new(0, 32, 0, 32)
-	AvatarWrapper.Position = UDim2.new(1, -44, 0.5, -16)
+	AvatarWrapper.Size = UDim2.new(0, 34, 0, 34)
+	AvatarWrapper.Position = UDim2.new(1, -44, 0.5, -17)
 	AvatarWrapper.BackgroundColor3 = Color3.fromRGB(24, 24, 30)
 	AvatarWrapper.BorderSizePixel = 0
 	AvatarWrapper.Parent = DockBar
@@ -265,40 +265,47 @@ function Library:CreateWindow(cfg)
 		PageLayout.Padding = UDim.new(0, 8)
 		PageLayout.Parent = Page
 
-		local TabBtn = Instance.new("TextButton")
-		TabBtn.Name = name .. "_TabBtn"
-		TabBtn.Size = UDim2.new(0, 32, 0, 32)
-		TabBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 38)
-		TabBtn.BackgroundTransparency = 0.5
-		TabBtn.BorderSizePixel = 0
-		TabBtn.Text = ""
-		TabBtn.AutoButtonColor = false
-		TabBtn.Parent = TabsContainer
-		Instance.new("UICorner", TabBtn).CornerRadius = UDim.new(1, 0)
+		local TabPill = Instance.new("Frame")
+		TabPill.Name = name .. "_TabPill"
+		TabPill.Size = UDim2.new(0, 36, 0, 36)
+		TabPill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		TabPill.BorderSizePixel = 0
+		TabPill.Parent = TabsContainer
+		Instance.new("UICorner", TabPill).CornerRadius = UDim.new(1, 0)
 
-		local TabStroke = Instance.new("UIStroke", TabBtn)
-		TabStroke.Color = Color3.fromRGB(255, 255, 255)
-		TabStroke.Transparency = 0.92
-		TabStroke.Thickness = 1
-
-		local TabGradient = Instance.new("UIGradient", TabBtn)
+		local TabGradient = Instance.new("UIGradient", TabPill)
 		TabGradient.Rotation = 90
 		TabGradient.Color = ColorSequence.new({
-			ColorSequenceKeypoint.new(0, Color3.fromRGB(45, 45, 56)),
-			ColorSequenceKeypoint.new(1, Color3.fromRGB(25, 25, 32))
+			ColorSequenceKeypoint.new(0, Color3.fromRGB(44, 44, 54)),
+			ColorSequenceKeypoint.new(1, Color3.fromRGB(24, 24, 30))
 		})
+
+		local TabStroke = Instance.new("UIStroke", TabPill)
+		TabStroke.Color = Color3.fromRGB(255, 255, 255)
+		TabStroke.Transparency = 0.90
+		TabStroke.Thickness = 1
+		TabStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
 		local TabIcon = Instance.new("ImageLabel")
 		TabIcon.Size = UDim2.new(0, 18, 0, 18)
 		TabIcon.AnchorPoint = Vector2.new(0.5, 0.5)
 		TabIcon.Position = UDim2.new(0.5, 0, 0.5, 0)
 		TabIcon.BackgroundTransparency = 1
-		TabIcon.ImageColor3 = Color3.fromRGB(160, 160, 175)
+		TabIcon.ImageColor3 = Color3.fromRGB(150, 150, 160)
 		TabIcon.Image = Lucide.Get(iconName or name)
-		TabIcon.Parent = TabBtn
+		TabIcon.ZIndex = 2
+		TabIcon.Parent = TabPill
+
+		local TabHitbox = Instance.new("TextButton")
+		TabHitbox.Size = UDim2.new(1, 0, 1, 0)
+		TabHitbox.BackgroundTransparency = 1
+		TabHitbox.Text = ""
+		TabHitbox.ZIndex = 5
+		TabHitbox.Parent = TabPill
 
 		local TabInstance = {
-			Button = TabBtn,
+			Pill = TabPill,
+			Gradient = TabGradient,
 			Stroke = TabStroke,
 			Icon = TabIcon,
 			Page = Page,
@@ -309,21 +316,29 @@ function Library:CreateWindow(cfg)
 
 			if WindowObj.CurrentTab then
 				WindowObj.CurrentTab.Page.Visible = false
-				TweenService:Create(WindowObj.CurrentTab.Button, TweenInfo.new(0.2), { BackgroundTransparency = 0.5 }):Play()
-				TweenService:Create(WindowObj.CurrentTab.Stroke, TweenInfo.new(0.2), { Transparency = 0.92 }):Play()
-				TweenService:Create(WindowObj.CurrentTab.Icon, TweenInfo.new(0.2), { ImageColor3 = Color3.fromRGB(160, 160, 175) }):Play()
+				WindowObj.CurrentTab.Gradient.Color = ColorSequence.new({
+					ColorSequenceKeypoint.new(0, Color3.fromRGB(44, 44, 54)),
+					ColorSequenceKeypoint.new(1, Color3.fromRGB(24, 24, 30))
+				})
+				TweenService:Create(WindowObj.CurrentTab.Stroke, TweenInfo.new(0.2), { Transparency = 0.90 }):Play()
+				TweenService:Create(WindowObj.CurrentTab.Icon, TweenInfo.new(0.2), { ImageColor3 = Color3.fromRGB(150, 150, 160) }):Play()
+				TweenService:Create(WindowObj.CurrentTab.Pill, TweenInfo.new(0.2), { Size = UDim2.new(0, 36, 0, 36) }):Play()
 			end
 
 			WindowObj.CurrentTab = TabInstance
 			HeaderTitle.Text = Title .. "  /  " .. name
 			Page.Visible = true
 
-			TweenService:Create(TabBtn, TweenInfo.new(0.2), { BackgroundTransparency = 0 }):Play()
-			TweenService:Create(TabStroke, TweenInfo.new(0.2), { Transparency = 0.70 }):Play()
+			TabGradient.Color = ColorSequence.new({
+				ColorSequenceKeypoint.new(0, Color3.fromRGB(65, 65, 78)),
+				ColorSequenceKeypoint.new(1, Color3.fromRGB(34, 34, 42))
+			})
+			TweenService:Create(TabStroke, TweenInfo.new(0.2), { Transparency = 0.65 }):Play()
 			TweenService:Create(TabIcon, TweenInfo.new(0.2), { ImageColor3 = Color3.fromRGB(255, 255, 255) }):Play()
+			TweenService:Create(TabPill, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Size = UDim2.new(0, 38, 0, 38) }):Play()
 		end
 
-		TabBtn.MouseButton1Click:Connect(SelectTab)
+		TabHitbox.MouseButton1Click:Connect(SelectTab)
 
 		if #WindowObj.Tabs == 0 then
 			SelectTab()
