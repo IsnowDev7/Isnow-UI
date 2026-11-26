@@ -286,6 +286,13 @@ function Library:CreateWindow(cfg)
 		TabPill.Parent = TabsContainer
 		Instance.new("UICorner", TabPill).CornerRadius = UDim.new(1, 0)
 
+		-- Glow effect: thick low‑opacity stroke creates a soft halo
+		local GlowStroke = Instance.new("UIStroke", TabPill)
+		GlowStroke.Color = Color3.fromRGB(255, 255, 255)
+		GlowStroke.Transparency = 0.85
+		GlowStroke.Thickness = 8
+		GlowStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+
 		local TabGradient = Instance.new("UIGradient", TabPill)
 		TabGradient.Rotation = 90
 		TabGradient.Color = ColorSequence.new({
