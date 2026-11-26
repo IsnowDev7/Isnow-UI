@@ -308,11 +308,25 @@ function Library:CreateWindow(cfg)
 
 		local TabPill = Instance.new("Frame")
 		TabPill.Name = name .. "_TabPill"
-		TabPill.Size = UDim2.new(0, 36, 0, 36)
+		TabPill.Size = UDim2.new(0, 38, 0, 36)
 		TabPill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 		TabPill.BorderSizePixel = 0
 		TabPill.Parent = TabsContainer
 		Instance.new("UICorner", TabPill).CornerRadius = UDim.new(1, 0)
+
+		local TabShadow = Instance.new("ImageLabel")
+		TabShadow.Name = "TabShadow"
+		TabShadow.AnchorPoint = Vector2.new(0.5, 0.5)
+		TabShadow.Position = UDim2.new(0.5, 0, 0.5, 0)
+		TabShadow.Size = UDim2.new(1, 24, 1, 24)
+		TabShadow.BackgroundTransparency = 1
+		TabShadow.Image = "rbxassetid://84140972988015"
+		TabShadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
+		TabShadow.ImageTransparency = 0.3
+		TabShadow.ScaleType = Enum.ScaleType.Slice
+		TabShadow.SliceCenter = Rect.new(23, 23, 277, 277)
+		TabShadow.ZIndex = 0
+		TabShadow.Parent = TabPill
 
 		local TabGradient = Instance.new("UIGradient", TabPill)
 		TabGradient.Rotation = 90
@@ -349,6 +363,7 @@ function Library:CreateWindow(cfg)
 			Gradient = TabGradient,
 			Stroke = TabStroke,
 			Icon = TabIcon,
+			Shadow = TabShadow,
 			Page = Page,
 		}
 
@@ -363,7 +378,8 @@ function Library:CreateWindow(cfg)
 				})
 				TweenService:Create(WindowObj.CurrentTab.Stroke, TweenInfo.new(0.2), { Transparency = 0.90 }):Play()
 				TweenService:Create(WindowObj.CurrentTab.Icon, TweenInfo.new(0.2), { ImageColor3 = Color3.fromRGB(150, 150, 160) }):Play()
-				TweenService:Create(WindowObj.CurrentTab.Pill, TweenInfo.new(0.2), { Size = UDim2.new(0, 36, 0, 36) }):Play()
+				TweenService:Create(WindowObj.CurrentTab.Pill, TweenInfo.new(0.2), { Size = UDim2.new(0, 38, 0, 36) }):Play()
+				TweenService:Create(WindowObj.CurrentTab.Shadow, TweenInfo.new(0.2), { ImageTransparency = 0.3 }):Play()
 			end
 
 			WindowObj.CurrentTab = TabInstance
@@ -376,7 +392,8 @@ function Library:CreateWindow(cfg)
 			})
 			TweenService:Create(TabStroke, TweenInfo.new(0.2), { Transparency = 0.65 }):Play()
 			TweenService:Create(TabIcon, TweenInfo.new(0.2), { ImageColor3 = Color3.fromRGB(255, 255, 255) }):Play()
-			TweenService:Create(TabPill, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Size = UDim2.new(0, 38, 0, 38) }):Play()
+			TweenService:Create(TabPill, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Size = UDim2.new(0, 40, 0, 38) }):Play()
+			TweenService:Create(TabShadow, TweenInfo.new(0.2), { ImageTransparency = 0.15 }):Play()
 		end
 
 		TabHitbox.MouseButton1Click:Connect(SelectTab)
