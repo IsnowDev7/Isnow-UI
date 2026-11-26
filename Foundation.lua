@@ -19,26 +19,39 @@ local function ResolveParent()
 	return parent
 end
 
+local FootagesusIcons = nil
+pcall(function()
+	FootagesusIcons = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/Icons/46d30c19ba7bc601d6ec794a48dc3a89568b1eec/lucide/dist/Icons.lua"))()
+end)
+
 local Lucide = {
-	["house"] = "rbxassetid://10723407389",
-	["home"] = "rbxassetid://10723407389",
-	["user"] = "rbxassetid://10747373176",
-	["player"] = "rbxassetid://10747373176",
-	["scroll"] = "rbxassetid://10734943448",
-	["scripts"] = "rbxassetid://10734943448",
-	["file"] = "rbxassetid://10723367380",
-	["settings"] = "rbxassetid://10734950309",
-	["gear"] = "rbxassetid://10734950309",
-	["sliders"] = "rbxassetid://10734963400",
-	["search"] = "rbxassetid://10734943674",
-	["bell"] = "rbxassetid://10709752996",
-	["shield"] = "rbxassetid://10734951847",
-	["terminal"] = "rbxassetid://10734982144",
+	["house"] = "rbxassetid://98755624629571",
+	["home"] = "rbxassetid://98755624629571",
+	["user"] = "rbxassetid://81589895647169",
+	["player"] = "rbxassetid://81589895647169",
+	["scroll"] = "rbxassetid://74072101474951",
+	["scripts"] = "rbxassetid://74072101474951",
+	["settings"] = "rbxassetid://80758916183665",
+	["gear"] = "rbxassetid://80758916183665",
+	["search"] = "rbxassetid://121018724060431",
+	["shield"] = "rbxassetid://110987169760162",
+	["terminal"] = "rbxassetid://83969264476798",
+	["bell"] = "rbxassetid://97904885874823",
+	["sliders"] = "rbxassetid://85538382643347",
 }
 
 function Lucide.Get(name)
 	name = string.lower(tostring(name or ""))
-	return Lucide[name] or ("rbxassetid://" .. name:gsub("%D", "")) or "rbxassetid://10723407389"
+	if FootagesusIcons and FootagesusIcons[name] then
+		return FootagesusIcons[name]
+	end
+	if Lucide[name] then
+		return Lucide[name]
+	end
+	if name:match("^rbxassetid://") then
+		return name
+	end
+	return "rbxassetid://98755624629571"
 end
 
 local Library = {
