@@ -107,6 +107,20 @@ function Library:CreateWindow(cfg)
 	ContentWindow.Parent = ScreenGui
 	Instance.new("UICorner", ContentWindow).CornerRadius = UDim.new(0, 14)
 
+	local WindowShadow = Instance.new("ImageLabel")
+	WindowShadow.Name = "WindowShadow"
+	WindowShadow.AnchorPoint = Vector2.new(0.5, 0.5)
+	WindowShadow.Position = UDim2.new(0.5, 0, 0.5, 0)
+	WindowShadow.Size = UDim2.new(1, 46, 1, 46)
+	WindowShadow.BackgroundTransparency = 1
+	WindowShadow.Image = "rbxassetid://5554236805"
+	WindowShadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
+	WindowShadow.ImageTransparency = 0.35
+	WindowShadow.ScaleType = Enum.ScaleType.Slice
+	WindowShadow.SliceCenter = Rect.new(23, 23, 277, 277)
+	WindowShadow.ZIndex = 0
+	WindowShadow.Parent = ContentWindow
+
 	local WindowStroke = Instance.new("UIStroke", ContentWindow)
 	WindowStroke.Color = Color3.fromRGB(255, 255, 255)
 	WindowStroke.Transparency = 0.92
@@ -145,6 +159,20 @@ function Library:CreateWindow(cfg)
 	DockBar.BorderSizePixel = 0
 	DockBar.Parent = ScreenGui
 	Instance.new("UICorner", DockBar).CornerRadius = UDim.new(1, 0)
+
+	local DockShadow = Instance.new("ImageLabel")
+	DockShadow.Name = "DockShadow"
+	DockShadow.AnchorPoint = Vector2.new(0.5, 0.5)
+	DockShadow.Position = UDim2.new(0.5, 0, 0.5, 0)
+	DockShadow.Size = UDim2.new(1, 46, 1, 46)
+	DockShadow.BackgroundTransparency = 1
+	DockShadow.Image = "rbxassetid://5554236805"
+	DockShadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
+	DockShadow.ImageTransparency = 0.3
+	DockShadow.ScaleType = Enum.ScaleType.Slice
+	DockShadow.SliceCenter = Rect.new(23, 23, 277, 277)
+	DockShadow.ZIndex = 0
+	DockShadow.Parent = DockBar
 
 	local DockGradient = Instance.new("UIGradient", DockBar)
 	DockGradient.Rotation = 90
@@ -285,13 +313,6 @@ function Library:CreateWindow(cfg)
 		TabPill.BorderSizePixel = 0
 		TabPill.Parent = TabsContainer
 		Instance.new("UICorner", TabPill).CornerRadius = UDim.new(1, 0)
-
-		-- Glow effect: thick low‑opacity stroke creates a soft halo
-		local GlowStroke = Instance.new("UIStroke", TabPill)
-		GlowStroke.Color = Color3.fromRGB(255, 255, 255)
-		GlowStroke.Transparency = 0.85
-		GlowStroke.Thickness = 8
-		GlowStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
 		local TabGradient = Instance.new("UIGradient", TabPill)
 		TabGradient.Rotation = 90
