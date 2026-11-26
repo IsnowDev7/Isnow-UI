@@ -3,9 +3,7 @@ local cloneRef = cloneref or function(obj) return obj end
 local Players = cloneRef(game:GetService("Players"))
 local UserInputService = cloneRef(game:GetService("UserInputService"))
 local TweenService = cloneRef(game:GetService("TweenService"))
-local RunService = cloneRef(game:GetService("RunService"))
 local CoreGui = cloneRef(game:GetService("CoreGui"))
-local HttpService = cloneRef(game:GetService("HttpService"))
 
 local LocalPlayer = Players.LocalPlayer
 
@@ -21,63 +19,26 @@ local function ResolveParent()
 	return parent
 end
 
-local Lucide = {}
-Lucide.Cache = {}
-Lucide.Folder = "isnow_lucide_cache"
-
-pcall(function()
-	if makefolder and not isfolder(Lucide.Folder) then
-		makefolder(Lucide.Folder)
-	end
-end)
+local Lucide = {
+	["house"] = "rbxassetid://10723407389",
+	["home"] = "rbxassetid://10723407389",
+	["user"] = "rbxassetid://10747373176",
+	["player"] = "rbxassetid://10747373176",
+	["scroll"] = "rbxassetid://10734943448",
+	["scripts"] = "rbxassetid://10734943448",
+	["file"] = "rbxassetid://10723367380",
+	["settings"] = "rbxassetid://10734950309",
+	["gear"] = "rbxassetid://10734950309",
+	["sliders"] = "rbxassetid://10734963400",
+	["search"] = "rbxassetid://10734943674",
+	["bell"] = "rbxassetid://10709752996",
+	["shield"] = "rbxassetid://10734951847",
+	["terminal"] = "rbxassetid://10734982144",
+}
 
 function Lucide.Get(name)
-	name = string.lower(name)
-	if Lucide.Cache[name] then
-		return Lucide.Cache[name]
-	end
-
-	local localPath = Lucide.Folder .. "/" .. name .. ".png"
-	if isfile and readfile and isfile(localPath) and getcustomasset then
-		local asset = getcustomasset(localPath)
-		Lucide.Cache[name] = asset
-		return asset
-	end
-
-	local aliasMap = {
-		home = "house",
-		profile = "user",
-		file = "scroll",
-		gear = "settings",
-	}
-	local queryName = aliasMap[name] or name
-	local url = "https://raw.githubusercontent.com/lucide-icons/lucide/main/icons/" .. queryName .. ".svg"
-
-	local success, svgData = pcall(function()
-		return game:HttpGet(url)
-	end)
-
-	if success and svgData and writefile and getcustomasset then
-		local svgPath = Lucide.Folder .. "/" .. name .. ".svg"
-		writefile(svgPath, svgData)
-		local asset = getcustomasset(svgPath)
-		Lucide.Cache[name] = asset
-		return asset
-	end
-
-	local fallback = {
-		house = "rbxassetid://10709791437",
-		home = "rbxassetid://10709791437",
-		user = "rbxassetid://10709797746",
-		profile = "rbxassetid://10709797746",
-		scroll = "rbxassetid://10709790948",
-		settings = "rbxassetid://10734950309",
-		gear = "rbxassetid://10734950309",
-	}
-
-	local asset = fallback[queryName] or "rbxassetid://10709791437"
-	Lucide.Cache[name] = asset
-	return asset
+	name = string.lower(tostring(name or ""))
+	return Lucide[name] or ("rbxassetid://" .. name:gsub("%D", "")) or "rbxassetid://10723407389"
 end
 
 local Library = {
@@ -128,26 +89,14 @@ function Library:CreateWindow(cfg)
 	ContentWindow.Name = "ContentWindow"
 	ContentWindow.Size = UDim2.new(0, 480, 0, 270)
 	ContentWindow.Position = UDim2.new(0.5, -240, 0.5, -165)
-	ContentWindow.BackgroundColor3 = Color3.fromRGB(16, 16, 18)
+	ContentWindow.BackgroundColor3 = Color3.fromRGB(16, 16, 20)
 	ContentWindow.BorderSizePixel = 0
-	ContentWindow.Visible = true
 	ContentWindow.Parent = ScreenGui
 	Instance.new("UICorner", ContentWindow).CornerRadius = UDim.new(0, 14)
 
-	local WindowGlow = Instance.new("ImageLabel")
-	WindowGlow.Name = "WindowDarkGlow"
-	WindowGlow.Size = UDim2.new(1, 46, 1, 46)
-	WindowGlow.Position = UDim2.new(0, -23, 0, -23)
-	WindowGlow.BackgroundTransparency = 1
-	WindowGlow.Image = "rbxassetid://5028857472"
-	WindowGlow.ImageColor3 = Color3.fromRGB(0, 0, 0)
-	WindowGlow.ImageTransparency = 0.35
-	WindowGlow.ZIndex = -1
-	WindowGlow.Parent = ContentWindow
-
 	local WindowStroke = Instance.new("UIStroke", ContentWindow)
 	WindowStroke.Color = Color3.fromRGB(255, 255, 255)
-	WindowStroke.Transparency = 0.94
+	WindowStroke.Transparency = 0.92
 	WindowStroke.Thickness = 1
 
 	local TopBar = Instance.new("Frame")
@@ -179,32 +128,21 @@ function Library:CreateWindow(cfg)
 	DockBar.Name = "LandscapeDockBar"
 	DockBar.Size = UDim2.new(0, 360, 0, 48)
 	DockBar.Position = UDim2.new(0.5, -180, 1, -72)
-	DockBar.BackgroundColor3 = Color3.fromRGB(15, 15, 18)
+	DockBar.BackgroundColor3 = Color3.fromRGB(18, 18, 22)
 	DockBar.BorderSizePixel = 0
 	DockBar.Parent = ScreenGui
 	Instance.new("UICorner", DockBar).CornerRadius = UDim.new(1, 0)
-
-	local DockGlow = Instance.new("ImageLabel")
-	DockGlow.Name = "DockDarkGlow"
-	DockGlow.Size = UDim2.new(1, 48, 1, 48)
-	DockGlow.Position = UDim2.new(0, -24, 0, -24)
-	DockGlow.BackgroundTransparency = 1
-	DockGlow.Image = "rbxassetid://5028857472"
-	DockGlow.ImageColor3 = Color3.fromRGB(0, 0, 0)
-	DockGlow.ImageTransparency = 0.2
-	DockGlow.ZIndex = -1
-	DockGlow.Parent = DockBar
 
 	local DockGradient = Instance.new("UIGradient", DockBar)
 	DockGradient.Rotation = 90
 	DockGradient.Color = ColorSequence.new({
 		ColorSequenceKeypoint.new(0, Color3.fromRGB(26, 26, 32)),
-		ColorSequenceKeypoint.new(1, Color3.fromRGB(14, 14, 17))
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(15, 15, 18))
 	})
 
 	local DockStroke = Instance.new("UIStroke", DockBar)
 	DockStroke.Color = Color3.fromRGB(255, 255, 255)
-	DockStroke.Transparency = 0.92
+	DockStroke.Transparency = 0.90
 	DockStroke.Thickness = 1
 
 	local ClockLabel = Instance.new("TextLabel")
@@ -330,8 +268,8 @@ function Library:CreateWindow(cfg)
 		local TabBtn = Instance.new("TextButton")
 		TabBtn.Name = name .. "_TabBtn"
 		TabBtn.Size = UDim2.new(0, 32, 0, 32)
-		TabBtn.BackgroundColor3 = Color3.fromRGB(24, 24, 30)
-		TabBtn.BackgroundTransparency = 0.7
+		TabBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 38)
+		TabBtn.BackgroundTransparency = 0.5
 		TabBtn.BorderSizePixel = 0
 		TabBtn.Text = ""
 		TabBtn.AutoButtonColor = false
@@ -340,14 +278,14 @@ function Library:CreateWindow(cfg)
 
 		local TabStroke = Instance.new("UIStroke", TabBtn)
 		TabStroke.Color = Color3.fromRGB(255, 255, 255)
-		TabStroke.Transparency = 0.94
+		TabStroke.Transparency = 0.92
 		TabStroke.Thickness = 1
 
 		local TabGradient = Instance.new("UIGradient", TabBtn)
 		TabGradient.Rotation = 90
 		TabGradient.Color = ColorSequence.new({
-			ColorSequenceKeypoint.new(0, Color3.fromRGB(38, 38, 48)),
-			ColorSequenceKeypoint.new(1, Color3.fromRGB(22, 22, 28))
+			ColorSequenceKeypoint.new(0, Color3.fromRGB(45, 45, 56)),
+			ColorSequenceKeypoint.new(1, Color3.fromRGB(25, 25, 32))
 		})
 
 		local TabIcon = Instance.new("ImageLabel")
@@ -355,7 +293,7 @@ function Library:CreateWindow(cfg)
 		TabIcon.AnchorPoint = Vector2.new(0.5, 0.5)
 		TabIcon.Position = UDim2.new(0.5, 0, 0.5, 0)
 		TabIcon.BackgroundTransparency = 1
-		TabIcon.ImageColor3 = Color3.fromRGB(150, 150, 160)
+		TabIcon.ImageColor3 = Color3.fromRGB(160, 160, 175)
 		TabIcon.Image = Lucide.Get(iconName or name)
 		TabIcon.Parent = TabBtn
 
@@ -371,9 +309,9 @@ function Library:CreateWindow(cfg)
 
 			if WindowObj.CurrentTab then
 				WindowObj.CurrentTab.Page.Visible = false
-				TweenService:Create(WindowObj.CurrentTab.Button, TweenInfo.new(0.2), { BackgroundTransparency = 0.7 }):Play()
-				TweenService:Create(WindowObj.CurrentTab.Stroke, TweenInfo.new(0.2), { Transparency = 0.94 }):Play()
-				TweenService:Create(WindowObj.CurrentTab.Icon, TweenInfo.new(0.2), { ImageColor3 = Color3.fromRGB(150, 150, 160) }):Play()
+				TweenService:Create(WindowObj.CurrentTab.Button, TweenInfo.new(0.2), { BackgroundTransparency = 0.5 }):Play()
+				TweenService:Create(WindowObj.CurrentTab.Stroke, TweenInfo.new(0.2), { Transparency = 0.92 }):Play()
+				TweenService:Create(WindowObj.CurrentTab.Icon, TweenInfo.new(0.2), { ImageColor3 = Color3.fromRGB(160, 160, 175) }):Play()
 			end
 
 			WindowObj.CurrentTab = TabInstance
@@ -381,7 +319,7 @@ function Library:CreateWindow(cfg)
 			Page.Visible = true
 
 			TweenService:Create(TabBtn, TweenInfo.new(0.2), { BackgroundTransparency = 0 }):Play()
-			TweenService:Create(TabStroke, TweenInfo.new(0.2), { Transparency = 0.75 }):Play()
+			TweenService:Create(TabStroke, TweenInfo.new(0.2), { Transparency = 0.70 }):Play()
 			TweenService:Create(TabIcon, TweenInfo.new(0.2), { ImageColor3 = Color3.fromRGB(255, 255, 255) }):Play()
 		end
 
