@@ -113,9 +113,9 @@ function Library:CreateWindow(cfg)
 	WindowShadow.Position = UDim2.new(0.5, 0, 0.5, 0)
 	WindowShadow.Size = UDim2.new(1, 46, 1, 46)
 	WindowShadow.BackgroundTransparency = 1
-	WindowShadow.Image = "rbxassetid://5554236805"
+	WindowShadow.Image = "rbxassetid://84140972988015"
 	WindowShadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
-	WindowShadow.ImageTransparency = 0.35
+	WindowShadow.ImageTransparency = 0.2
 	WindowShadow.ScaleType = Enum.ScaleType.Slice
 	WindowShadow.SliceCenter = Rect.new(23, 23, 277, 277)
 	WindowShadow.ZIndex = 0
@@ -166,9 +166,9 @@ function Library:CreateWindow(cfg)
 	DockShadow.Position = UDim2.new(0.5, 0, 0.5, 0)
 	DockShadow.Size = UDim2.new(1, 46, 1, 46)
 	DockShadow.BackgroundTransparency = 1
-	DockShadow.Image = "rbxassetid://5554236805"
+	DockShadow.Image = "rbxassetid://84140972988015"
 	DockShadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
-	DockShadow.ImageTransparency = 0.3
+	DockShadow.ImageTransparency = 0.2
 	DockShadow.ScaleType = Enum.ScaleType.Slice
 	DockShadow.SliceCenter = Rect.new(23, 23, 277, 277)
 	DockShadow.ZIndex = 0
