@@ -5,8 +5,80 @@ local UserInputService = cloneRef(game:GetService("UserInputService"))
 local TweenService = cloneRef(game:GetService("TweenService"))
 local RunService = cloneRef(game:GetService("RunService"))
 local CoreGui = cloneRef(game:GetService("CoreGui"))
+local HttpService = cloneRef(game:GetService("HttpService"))
 
 local LocalPlayer = Players.LocalPlayer
+
+local function ResolveParent()
+	local parent = LocalPlayer and LocalPlayer:FindFirstChildOfClass("PlayerGui")
+	pcall(function()
+		if gethui then
+			parent = gethui()
+		elseif CoreGui then
+			parent = CoreGui
+		end
+	end)
+	return parent
+end
+
+local Lucide = {}
+Lucide.Cache = {}
+Lucide.Folder = "isnow_lucide_cache"
+
+pcall(function()
+	if makefolder and not isfolder(Lucide.Folder) then
+		makefolder(Lucide.Folder)
+	end
+end)
+
+function Lucide.Get(name)
+	name = string.lower(name)
+	if Lucide.Cache[name] then
+		return Lucide.Cache[name]
+	end
+
+	local localPath = Lucide.Folder .. "/" .. name .. ".png"
+	if isfile and readfile and isfile(localPath) and getcustomasset then
+		local asset = getcustomasset(localPath)
+		Lucide.Cache[name] = asset
+		return asset
+	end
+
+	local aliasMap = {
+		home = "house",
+		profile = "user",
+		file = "scroll",
+		gear = "settings",
+	}
+	local queryName = aliasMap[name] or name
+	local url = "https://raw.githubusercontent.com/lucide-icons/lucide/main/icons/" .. queryName .. ".svg"
+
+	local success, svgData = pcall(function()
+		return game:HttpGet(url)
+	end)
+
+	if success and svgData and writefile and getcustomasset then
+		local svgPath = Lucide.Folder .. "/" .. name .. ".svg"
+		writefile(svgPath, svgData)
+		local asset = getcustomasset(svgPath)
+		Lucide.Cache[name] = asset
+		return asset
+	end
+
+	local fallback = {
+		house = "rbxassetid://10709791437",
+		home = "rbxassetid://10709791437",
+		user = "rbxassetid://10709797746",
+		profile = "rbxassetid://10709797746",
+		scroll = "rbxassetid://10709790948",
+		settings = "rbxassetid://10734950309",
+		gear = "rbxassetid://10734950309",
+	}
+
+	local asset = fallback[queryName] or "rbxassetid://10709791437"
+	Lucide.Cache[name] = asset
+	return asset
+end
 
 local Library = {
 	Spritesheet = {
@@ -16,19 +88,7 @@ local Library = {
 		Total = 80,
 		Cols = 10,
 	},
-	Theme = {
-		WindowBg = Color3.fromRGB(16, 16, 20),
-		SidebarBg = Color3.fromRGB(20, 20, 26),
-		CardBg = Color3.fromRGB(24, 24, 30),
-		CardHover = Color3.fromRGB(30, 30, 38),
-		Border = Color3.fromRGB(44, 44, 56),
-		TextMain = Color3.fromRGB(245, 245, 250),
-		TextSub = Color3.fromRGB(145, 145, 160),
-		AccentGreen = Color3.fromRGB(0, 205, 115),
-		AccentRed = Color3.fromRGB(230, 60, 75),
-		ToggleOff = Color3.fromRGB(34, 34, 44),
-		White = Color3.fromRGB(255, 255, 255),
-	}
+	Lucide = Lucide
 }
 
 function Library:GetGlassFrame(T)
@@ -51,173 +111,163 @@ end
 
 function Library:CreateWindow(cfg)
 	cfg = cfg or {}
-	local Title = cfg.Title or "Foundation UI"
-	local SubTitle = cfg.SubTitle or "v1.0.0"
-	local Size = cfg.Size or UDim2.new(0, 580, 0, 360)
+	local Title = cfg.Title or "Foundation"
 
-	local TargetParent = LocalPlayer and LocalPlayer:FindFirstChildOfClass("PlayerGui")
-	pcall(function()
-		if gethui then
-			TargetParent = gethui()
-		elseif CoreGui then
-			TargetParent = CoreGui
-		end
-	end)
-
-	local existing = TargetParent:FindFirstChild("Isnow_FoundationUI")
+	local ParentTarget = ResolveParent()
+	local existing = ParentTarget:FindFirstChild("Isnow_DockUI")
 	if existing then existing:Destroy() end
 
 	local ScreenGui = Instance.new("ScreenGui")
-	ScreenGui.Name = "Isnow_FoundationUI"
+	ScreenGui.Name = "Isnow_DockUI"
 	ScreenGui.ResetOnSpawn = false
 	ScreenGui.IgnoreGuiInset = true
 	ScreenGui.DisplayOrder = 999
-	ScreenGui.Parent = TargetParent
+	ScreenGui.Parent = ParentTarget
 
-	local Window = Instance.new("Frame")
-	Window.Name = "MainWindow"
-	Window.Size = Size
-	Window.Position = UDim2.new(0.5, -Size.X.Offset / 2, 0.5, -Size.Y.Offset / 2)
-	Window.BackgroundColor3 = self.Theme.WindowBg
-	Window.BorderSizePixel = 0
-	Window.ClipsDescendants = false
-	Window.Parent = ScreenGui
-	Instance.new("UICorner", Window).CornerRadius = UDim.new(0, 12)
+	local ContentWindow = Instance.new("Frame")
+	ContentWindow.Name = "ContentWindow"
+	ContentWindow.Size = UDim2.new(0, 480, 0, 270)
+	ContentWindow.Position = UDim2.new(0.5, -240, 0.5, -165)
+	ContentWindow.BackgroundColor3 = Color3.fromRGB(16, 16, 18)
+	ContentWindow.BorderSizePixel = 0
+	ContentWindow.Visible = true
+	ContentWindow.Parent = ScreenGui
+	Instance.new("UICorner", ContentWindow).CornerRadius = UDim.new(0, 14)
 
-	local WindowStroke = Instance.new("UIStroke", Window)
-	WindowStroke.Color = self.Theme.Border
-	WindowStroke.Transparency = 0.5
+	local WindowGlow = Instance.new("ImageLabel")
+	WindowGlow.Name = "WindowDarkGlow"
+	WindowGlow.Size = UDim2.new(1, 46, 1, 46)
+	WindowGlow.Position = UDim2.new(0, -23, 0, -23)
+	WindowGlow.BackgroundTransparency = 1
+	WindowGlow.Image = "rbxassetid://5028857472"
+	WindowGlow.ImageColor3 = Color3.fromRGB(0, 0, 0)
+	WindowGlow.ImageTransparency = 0.35
+	WindowGlow.ZIndex = -1
+	WindowGlow.Parent = ContentWindow
+
+	local WindowStroke = Instance.new("UIStroke", ContentWindow)
+	WindowStroke.Color = Color3.fromRGB(255, 255, 255)
+	WindowStroke.Transparency = 0.94
 	WindowStroke.Thickness = 1
-
-	local BottomBar = Instance.new("Frame")
-	BottomBar.Name = "BottomBar"
-	BottomBar.Size = UDim2.new(1, 0, 0, 28)
-	BottomBar.Position = UDim2.new(0, 0, 1, 6)
-	BottomBar.BackgroundColor3 = self.Theme.SidebarBg
-	BottomBar.BorderSizePixel = 0
-	BottomBar.Parent = Window
-	Instance.new("UICorner", BottomBar).CornerRadius = UDim.new(0, 8)
-
-	local BottomStroke = Instance.new("UIStroke", BottomBar)
-	BottomStroke.Color = self.Theme.Border
-	BottomStroke.Transparency = 0.6
-	BottomStroke.Thickness = 1
-
-	local UserBadge = Instance.new("TextLabel")
-	UserBadge.Text = "👤 " .. (LocalPlayer and LocalPlayer.DisplayName or "User")
-	UserBadge.Font = Enum.Font.GothamMedium
-	UserBadge.TextSize = 11
-	UserBadge.TextColor3 = self.Theme.TextSub
-	UserBadge.TextXAlignment = Enum.TextXAlignment.Left
-	UserBadge.Size = UDim2.new(0.5, -14, 1, 0)
-	UserBadge.Position = UDim2.new(0, 12, 0, 0)
-	UserBadge.BackgroundTransparency = 1
-	UserBadge.Parent = BottomBar
-
-	local PerformanceLabel = Instance.new("TextLabel")
-	PerformanceLabel.Text = "FPS: 60 | " .. SubTitle
-	PerformanceLabel.Font = Enum.Font.Gotham
-	PerformanceLabel.TextSize = 11
-	PerformanceLabel.TextColor3 = self.Theme.TextSub
-	PerformanceLabel.TextXAlignment = Enum.TextXAlignment.Right
-	PerformanceLabel.Size = UDim2.new(0.5, -14, 1, 0)
-	PerformanceLabel.Position = UDim2.new(0.5, 0, 0, 0)
-	PerformanceLabel.BackgroundTransparency = 1
-	PerformanceLabel.Parent = BottomBar
-
-	local frameCount = 0
-	local lastFpsTime = tick()
-	local fpsConn = RunService.RenderStepped:Connect(function()
-		frameCount = frameCount + 1
-		local now = tick()
-		if now - lastFpsTime >= 1 then
-			local fps = math.floor(frameCount / (now - lastFpsTime))
-			PerformanceLabel.Text = string.format("FPS: %d | %s", fps, SubTitle)
-			frameCount = 0
-			lastFpsTime = now
-		end
-	end)
-
-	local Sidebar = Instance.new("Frame")
-	Sidebar.Name = "Sidebar"
-	Sidebar.Size = UDim2.new(0, 160, 1, 0)
-	Sidebar.BackgroundColor3 = self.Theme.SidebarBg
-	Sidebar.BorderSizePixel = 0
-	Sidebar.Parent = Window
-	Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 12)
-
-	local SidebarDivider = Instance.new("Frame")
-	SidebarDivider.Size = UDim2.new(0, 1, 1, 0)
-	SidebarDivider.Position = UDim2.new(1, -1, 0, 0)
-	SidebarDivider.BackgroundColor3 = self.Theme.Border
-	SidebarDivider.BackgroundTransparency = 0.6
-	SidebarDivider.BorderSizePixel = 0
-	SidebarDivider.Parent = Sidebar
-
-	local BrandHeader = Instance.new("Frame")
-	BrandHeader.Size = UDim2.new(1, 0, 0, 52)
-	BrandHeader.BackgroundTransparency = 1
-	BrandHeader.Parent = Sidebar
-
-	local LogoIcon = Instance.new("ImageLabel")
-	LogoIcon.Size = UDim2.new(0, 22, 0, 22)
-	LogoIcon.Position = UDim2.new(0, 16, 0.5, -11)
-	LogoIcon.BackgroundTransparency = 1
-	LogoIcon.Image = "rbxassetid://6031075931"
-	LogoIcon.ImageColor3 = self.Theme.AccentGreen
-	LogoIcon.Parent = BrandHeader
-
-	local BrandTitle = Instance.new("TextLabel")
-	BrandTitle.Text = Title
-	BrandTitle.Font = Enum.Font.GothamBold
-	BrandTitle.TextSize = 14
-	BrandTitle.TextColor3 = self.Theme.TextMain
-	BrandTitle.TextXAlignment = Enum.TextXAlignment.Left
-	BrandTitle.Size = UDim2.new(1, -50, 1, 0)
-	BrandTitle.Position = UDim2.new(0, 46, 0, 0)
-	BrandTitle.BackgroundTransparency = 1
-	BrandTitle.Parent = BrandHeader
-
-	local TabList = Instance.new("ScrollingFrame")
-	TabList.Name = "TabList"
-	TabList.Size = UDim2.new(1, -16, 1, -64)
-	TabList.Position = UDim2.new(0, 8, 0, 56)
-	TabList.BackgroundTransparency = 1
-	TabList.BorderSizePixel = 0
-	TabList.ScrollBarThickness = 0
-	TabList.CanvasSize = UDim2.new(0, 0, 0, 0)
-	TabList.AutomaticCanvasSize = Enum.AutomaticSize.Y
-	TabList.Parent = Sidebar
-
-	local TabLayout = Instance.new("UIListLayout")
-	TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
-	TabLayout.Padding = UDim.new(0, 6)
-	TabLayout.Parent = TabList
-
-	local PagesContainer = Instance.new("Frame")
-	PagesContainer.Name = "PagesContainer"
-	PagesContainer.Size = UDim2.new(1, -160, 1, 0)
-	PagesContainer.Position = UDim2.new(0, 160, 0, 0)
-	PagesContainer.BackgroundTransparency = 1
-	PagesContainer.Parent = Window
 
 	local TopBar = Instance.new("Frame")
 	TopBar.Name = "TopBar"
-	TopBar.Size = UDim2.new(1, 0, 0, 48)
+	TopBar.Size = UDim2.new(1, 0, 0, 42)
 	TopBar.BackgroundTransparency = 1
-	TopBar.Parent = PagesContainer
+	TopBar.Parent = ContentWindow
 
-	local PageTitle = Instance.new("TextLabel")
-	PageTitle.Name = "CurrentPageTitle"
-	PageTitle.Text = ""
-	PageTitle.Font = Enum.Font.GothamBold
-	PageTitle.TextSize = 16
-	PageTitle.TextColor3 = self.Theme.TextMain
-	PageTitle.TextXAlignment = Enum.TextXAlignment.Left
-	PageTitle.Size = UDim2.new(1, -30, 1, 0)
-	PageTitle.Position = UDim2.new(0, 20, 0, 0)
-	PageTitle.BackgroundTransparency = 1
-	PageTitle.Parent = TopBar
+	local HeaderTitle = Instance.new("TextLabel")
+	HeaderTitle.Name = "HeaderTitle"
+	HeaderTitle.Text = Title
+	HeaderTitle.Font = Enum.Font.GothamBold
+	HeaderTitle.TextSize = 14
+	HeaderTitle.TextColor3 = Color3.fromRGB(240, 240, 245)
+	HeaderTitle.TextXAlignment = Enum.TextXAlignment.Left
+	HeaderTitle.Size = UDim2.new(1, -30, 1, 0)
+	HeaderTitle.Position = UDim2.new(0, 16, 0, 0)
+	HeaderTitle.BackgroundTransparency = 1
+	HeaderTitle.Parent = TopBar
+
+	local PageHolder = Instance.new("Frame")
+	PageHolder.Name = "PageHolder"
+	PageHolder.Size = UDim2.new(1, -28, 1, -54)
+	PageHolder.Position = UDim2.new(0, 14, 0, 44)
+	PageHolder.BackgroundTransparency = 1
+	PageHolder.Parent = ContentWindow
+
+	local DockBar = Instance.new("Frame")
+	DockBar.Name = "LandscapeDockBar"
+	DockBar.Size = UDim2.new(0, 360, 0, 48)
+	DockBar.Position = UDim2.new(0.5, -180, 1, -72)
+	DockBar.BackgroundColor3 = Color3.fromRGB(15, 15, 18)
+	DockBar.BorderSizePixel = 0
+	DockBar.Parent = ScreenGui
+	Instance.new("UICorner", DockBar).CornerRadius = UDim.new(1, 0)
+
+	local DockGlow = Instance.new("ImageLabel")
+	DockGlow.Name = "DockDarkGlow"
+	DockGlow.Size = UDim2.new(1, 48, 1, 48)
+	DockGlow.Position = UDim2.new(0, -24, 0, -24)
+	DockGlow.BackgroundTransparency = 1
+	DockGlow.Image = "rbxassetid://5028857472"
+	DockGlow.ImageColor3 = Color3.fromRGB(0, 0, 0)
+	DockGlow.ImageTransparency = 0.2
+	DockGlow.ZIndex = -1
+	DockGlow.Parent = DockBar
+
+	local DockGradient = Instance.new("UIGradient", DockBar)
+	DockGradient.Rotation = 90
+	DockGradient.Color = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(26, 26, 32)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(14, 14, 17))
+	})
+
+	local DockStroke = Instance.new("UIStroke", DockBar)
+	DockStroke.Color = Color3.fromRGB(255, 255, 255)
+	DockStroke.Transparency = 0.92
+	DockStroke.Thickness = 1
+
+	local ClockLabel = Instance.new("TextLabel")
+	ClockLabel.Name = "Clock"
+	ClockLabel.Size = UDim2.new(0, 52, 1, 0)
+	ClockLabel.Position = UDim2.new(0, 14, 0, 0)
+	ClockLabel.Font = Enum.Font.GothamBold
+	ClockLabel.TextSize = 13
+	ClockLabel.TextColor3 = Color3.fromRGB(235, 235, 240)
+	ClockLabel.TextXAlignment = Enum.TextXAlignment.Center
+	ClockLabel.BackgroundTransparency = 1
+	ClockLabel.Parent = DockBar
+
+	task.spawn(function()
+		while true do
+			ClockLabel.Text = os.date("%H:%M")
+			task.wait(1)
+		end
+	end)
+
+	local TabsContainer = Instance.new("Frame")
+	TabsContainer.Name = "TabsContainer"
+	TabsContainer.Size = UDim2.new(1, -126, 1, 0)
+	TabsContainer.Position = UDim2.new(0, 72, 0, 0)
+	TabsContainer.BackgroundTransparency = 1
+	TabsContainer.Parent = DockBar
+
+	local TabsLayout = Instance.new("UIListLayout")
+	TabsLayout.FillDirection = Enum.FillDirection.Horizontal
+	TabsLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+	TabsLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+	TabsLayout.Padding = UDim.new(0, 8)
+	TabsLayout.Parent = TabsContainer
+
+	local AvatarWrapper = Instance.new("Frame")
+	AvatarWrapper.Name = "AvatarWrapper"
+	AvatarWrapper.Size = UDim2.new(0, 32, 0, 32)
+	AvatarWrapper.Position = UDim2.new(1, -44, 0.5, -16)
+	AvatarWrapper.BackgroundColor3 = Color3.fromRGB(24, 24, 30)
+	AvatarWrapper.BorderSizePixel = 0
+	AvatarWrapper.Parent = DockBar
+	Instance.new("UICorner", AvatarWrapper).CornerRadius = UDim.new(1, 0)
+
+	local AvatarStroke = Instance.new("UIStroke", AvatarWrapper)
+	AvatarStroke.Color = Color3.fromRGB(255, 255, 255)
+	AvatarStroke.Transparency = 0.88
+	AvatarStroke.Thickness = 1
+
+	local AvatarImg = Instance.new("ImageLabel")
+	AvatarImg.Size = UDim2.new(1, 0, 1, 0)
+	AvatarImg.BackgroundTransparency = 1
+	AvatarImg.Parent = AvatarWrapper
+	Instance.new("UICorner", AvatarImg).CornerRadius = UDim.new(1, 0)
+
+	if LocalPlayer then
+		pcall(function()
+			AvatarImg.Image = Players:GetUserThumbnailAsync(
+				LocalPlayer.UserId,
+				Enum.ThumbnailType.HeadShot,
+				Enum.ThumbnailSize.Size48x48
+			)
+		end)
+	end
 
 	local isDragging = false
 	local dragStart = Vector2.zero
@@ -227,17 +277,16 @@ function Library:CreateWindow(cfg)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 			isDragging = true
 			dragStart = Vector2.new(input.Position.X, input.Position.Y)
-			startPos = Window.Position
+			startPos = ContentWindow.Position
 		end
 	end
 
 	TopBar.InputBegan:Connect(InitDrag)
-	BrandHeader.InputBegan:Connect(InitDrag)
 
-	local dragConn = UserInputService.InputChanged:Connect(function(input)
+	UserInputService.InputChanged:Connect(function(input)
 		if isDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
 			local delta = Vector2.new(input.Position.X, input.Position.Y) - dragStart
-			Window.Position = UDim2.new(
+			ContentWindow.Position = UDim2.new(
 				startPos.X.Scale,
 				startPos.X.Offset + delta.X,
 				startPos.Y.Scale,
@@ -246,90 +295,75 @@ function Library:CreateWindow(cfg)
 		end
 	end)
 
-	local endConn = UserInputService.InputEnded:Connect(function(input)
+	UserInputService.InputEnded:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 			isDragging = false
 		end
 	end)
 
 	local WindowObj = {
-		ScreenGui = ScreenGui,
-		Window = Window,
 		Tabs = {},
 		CurrentTab = nil,
+		ScreenGui = ScreenGui,
+		ContentWindow = ContentWindow,
+		DockBar = DockBar,
 	}
 
-	function WindowObj:Destroy()
-		if fpsConn then fpsConn:Disconnect() end
-		if dragConn then dragConn:Disconnect() end
-		if endConn then endConn:Disconnect() end
-		ScreenGui:Destroy()
-	end
-
-	function WindowObj:CreateTab(name, iconId)
+	function WindowObj:CreateTab(name, iconName)
 		local Page = Instance.new("ScrollingFrame")
 		Page.Name = name .. "_Page"
-		Page.Size = UDim2.new(1, -36, 1, -56)
-		Page.Position = UDim2.new(0, 18, 0, 48)
+		Page.Size = UDim2.new(1, 0, 1, 0)
 		Page.BackgroundTransparency = 1
 		Page.BorderSizePixel = 0
 		Page.ScrollBarThickness = 2
-		Page.ScrollBarImageColor3 = Library.Theme.Border
+		Page.ScrollBarImageColor3 = Color3.fromRGB(44, 44, 56)
 		Page.CanvasSize = UDim2.new(0, 0, 0, 0)
 		Page.AutomaticCanvasSize = Enum.AutomaticSize.Y
 		Page.Visible = false
-		Page.Parent = PagesContainer
+		Page.Parent = PageHolder
 
 		local PageLayout = Instance.new("UIListLayout")
 		PageLayout.SortOrder = Enum.SortOrder.LayoutOrder
-		PageLayout.Padding = UDim.new(0, 10)
+		PageLayout.Padding = UDim.new(0, 8)
 		PageLayout.Parent = Page
 
 		local TabBtn = Instance.new("TextButton")
-		TabBtn.Name = name .. "_Btn"
-		TabBtn.Size = UDim2.new(1, 0, 0, 38)
-		TabBtn.BackgroundColor3 = Library.Theme.SidebarBg
-		TabBtn.BackgroundTransparency = 1
+		TabBtn.Name = name .. "_TabBtn"
+		TabBtn.Size = UDim2.new(0, 32, 0, 32)
+		TabBtn.BackgroundColor3 = Color3.fromRGB(24, 24, 30)
+		TabBtn.BackgroundTransparency = 0.7
 		TabBtn.BorderSizePixel = 0
 		TabBtn.Text = ""
 		TabBtn.AutoButtonColor = false
-		TabBtn.Parent = TabList
-		Instance.new("UICorner", TabBtn).CornerRadius = UDim.new(0, 8)
+		TabBtn.Parent = TabsContainer
+		Instance.new("UICorner", TabBtn).CornerRadius = UDim.new(1, 0)
 
-		local Indicator = Instance.new("Frame")
-		Indicator.Size = UDim2.new(0, 3, 0, 18)
-		Indicator.Position = UDim2.new(0, 0, 0.5, -9)
-		Indicator.BackgroundColor3 = Library.Theme.AccentGreen
-		Indicator.BorderSizePixel = 0
-		Indicator.BackgroundTransparency = 1
-		Indicator.Parent = TabBtn
-		Instance.new("UICorner", Indicator).CornerRadius = UDim.new(1, 0)
+		local TabStroke = Instance.new("UIStroke", TabBtn)
+		TabStroke.Color = Color3.fromRGB(255, 255, 255)
+		TabStroke.Transparency = 0.94
+		TabStroke.Thickness = 1
 
-		local Icon = Instance.new("ImageLabel")
-		Icon.Size = UDim2.new(0, 16, 0, 16)
-		Icon.Position = UDim2.new(0, 12, 0.5, -8)
-		Icon.BackgroundTransparency = 1
-		Icon.Image = iconId or "rbxassetid://6031075931"
-		Icon.ImageColor3 = Library.Theme.TextSub
-		Icon.Parent = TabBtn
+		local TabGradient = Instance.new("UIGradient", TabBtn)
+		TabGradient.Rotation = 90
+		TabGradient.Color = ColorSequence.new({
+			ColorSequenceKeypoint.new(0, Color3.fromRGB(38, 38, 48)),
+			ColorSequenceKeypoint.new(1, Color3.fromRGB(22, 22, 28))
+		})
 
-		local TabTitle = Instance.new("TextLabel")
-		TabTitle.Text = name
-		TabTitle.Font = Enum.Font.GothamMedium
-		TabTitle.TextSize = 13
-		TabTitle.TextColor3 = Library.Theme.TextSub
-		TabTitle.TextXAlignment = Enum.TextXAlignment.Left
-		TabTitle.Size = UDim2.new(1, -38, 1, 0)
-		TabTitle.Position = UDim2.new(0, 36, 0, 0)
-		TabTitle.BackgroundTransparency = 1
-		TabTitle.Parent = TabBtn
+		local TabIcon = Instance.new("ImageLabel")
+		TabIcon.Size = UDim2.new(0, 18, 0, 18)
+		TabIcon.AnchorPoint = Vector2.new(0.5, 0.5)
+		TabIcon.Position = UDim2.new(0.5, 0, 0.5, 0)
+		TabIcon.BackgroundTransparency = 1
+		TabIcon.ImageColor3 = Color3.fromRGB(150, 150, 160)
+		TabIcon.Image = Lucide.Get(iconName or name)
+		TabIcon.Parent = TabBtn
 
 		local TabInstance = {
 			Button = TabBtn,
+			Stroke = TabStroke,
+			Icon = TabIcon,
 			Page = Page,
-			Indicator = Indicator,
-			Icon = Icon,
-			Title = TabTitle,
 		}
 
 		local function SelectTab()
@@ -337,34 +371,21 @@ function Library:CreateWindow(cfg)
 
 			if WindowObj.CurrentTab then
 				WindowObj.CurrentTab.Page.Visible = false
-				TweenService:Create(WindowObj.CurrentTab.Button, TweenInfo.new(0.2), { BackgroundTransparency = 1 }):Play()
-				TweenService:Create(WindowObj.CurrentTab.Indicator, TweenInfo.new(0.2), { BackgroundTransparency = 1 }):Play()
-				TweenService:Create(WindowObj.CurrentTab.Icon, TweenInfo.new(0.2), { ImageColor3 = Library.Theme.TextSub }):Play()
-				TweenService:Create(WindowObj.CurrentTab.Title, TweenInfo.new(0.2), { TextColor3 = Library.Theme.TextSub }):Play()
+				TweenService:Create(WindowObj.CurrentTab.Button, TweenInfo.new(0.2), { BackgroundTransparency = 0.7 }):Play()
+				TweenService:Create(WindowObj.CurrentTab.Stroke, TweenInfo.new(0.2), { Transparency = 0.94 }):Play()
+				TweenService:Create(WindowObj.CurrentTab.Icon, TweenInfo.new(0.2), { ImageColor3 = Color3.fromRGB(150, 150, 160) }):Play()
 			end
 
 			WindowObj.CurrentTab = TabInstance
-			PageTitle.Text = name
+			HeaderTitle.Text = Title .. "  /  " .. name
 			Page.Visible = true
 
-			TweenService:Create(TabBtn, TweenInfo.new(0.2), { BackgroundColor3 = Library.Theme.CardBg, BackgroundTransparency = 0 }):Play()
-			TweenService:Create(Indicator, TweenInfo.new(0.2), { BackgroundTransparency = 0 }):Play()
-			TweenService:Create(Icon, TweenInfo.new(0.2), { ImageColor3 = Library.Theme.TextMain }):Play()
-			TweenService:Create(TabTitle, TweenInfo.new(0.2), { TextColor3 = Library.Theme.TextMain }):Play()
+			TweenService:Create(TabBtn, TweenInfo.new(0.2), { BackgroundTransparency = 0 }):Play()
+			TweenService:Create(TabStroke, TweenInfo.new(0.2), { Transparency = 0.75 }):Play()
+			TweenService:Create(TabIcon, TweenInfo.new(0.2), { ImageColor3 = Color3.fromRGB(255, 255, 255) }):Play()
 		end
 
 		TabBtn.MouseButton1Click:Connect(SelectTab)
-
-		TabBtn.MouseEnter:Connect(function()
-			if WindowObj.CurrentTab ~= TabInstance then
-				TweenService:Create(TabBtn, TweenInfo.new(0.15), { BackgroundColor3 = Library.Theme.CardBg, BackgroundTransparency = 0.5 }):Play()
-			end
-		end)
-		TabBtn.MouseLeave:Connect(function()
-			if WindowObj.CurrentTab ~= TabInstance then
-				TweenService:Create(TabBtn, TweenInfo.new(0.15), { BackgroundTransparency = 1 }):Play()
-			end
-		end)
 
 		if #WindowObj.Tabs == 0 then
 			SelectTab()
@@ -382,25 +403,25 @@ function Library:CreateWindow(cfg)
 			local callback = opt.Callback
 
 			local Row = Instance.new("Frame")
-			Row.Size = UDim2.new(1, 0, 0, 56)
-			Row.BackgroundColor3 = Library.Theme.CardBg
+			Row.Size = UDim2.new(1, 0, 0, 52)
+			Row.BackgroundColor3 = Color3.fromRGB(22, 22, 28)
 			Row.BorderSizePixel = 0
 			Row.Parent = Page
 			Instance.new("UICorner", Row).CornerRadius = UDim.new(0, 10)
 
 			local RowStroke = Instance.new("UIStroke", Row)
-			RowStroke.Color = Library.Theme.Border
-			RowStroke.Transparency = 0.75
+			RowStroke.Color = Color3.fromRGB(255, 255, 255)
+			RowStroke.Transparency = 0.94
 			RowStroke.Thickness = 1
 
 			local LabelTitle = Instance.new("TextLabel")
 			LabelTitle.Text = title
 			LabelTitle.Font = Enum.Font.GothamMedium
 			LabelTitle.TextSize = 13
-			LabelTitle.TextColor3 = Library.Theme.TextMain
+			LabelTitle.TextColor3 = Color3.fromRGB(240, 240, 245)
 			LabelTitle.TextXAlignment = Enum.TextXAlignment.Left
 			LabelTitle.Size = UDim2.new(1, -90, 0, 18)
-			LabelTitle.Position = UDim2.new(0, 14, 0, 10)
+			LabelTitle.Position = UDim2.new(0, 12, 0, 8)
 			LabelTitle.BackgroundTransparency = 1
 			LabelTitle.Parent = Row
 
@@ -408,10 +429,10 @@ function Library:CreateWindow(cfg)
 			LabelDesc.Text = desc
 			LabelDesc.Font = Enum.Font.Gotham
 			LabelDesc.TextSize = 11
-			LabelDesc.TextColor3 = Library.Theme.TextSub
+			LabelDesc.TextColor3 = Color3.fromRGB(140, 140, 150)
 			LabelDesc.TextXAlignment = Enum.TextXAlignment.Left
 			LabelDesc.Size = UDim2.new(1, -90, 0, 14)
-			LabelDesc.Position = UDim2.new(0, 14, 0, 28)
+			LabelDesc.Position = UDim2.new(0, 12, 0, 26)
 			LabelDesc.BackgroundTransparency = 1
 			LabelDesc.Parent = Row
 
@@ -424,15 +445,15 @@ function Library:CreateWindow(cfg)
 			local Track = Instance.new("Frame")
 			Track.Size = UDim2.new(0, TRACK_W, 0, TRACK_H)
 			Track.AnchorPoint = Vector2.new(1, 0.5)
-			Track.Position = UDim2.new(1, -14, 0.5, 0)
-			Track.BackgroundColor3 = Library.Theme.ToggleOff
+			Track.Position = UDim2.new(1, -12, 0.5, 0)
+			Track.BackgroundColor3 = Color3.fromRGB(34, 34, 44)
 			Track.BorderSizePixel = 0
 			Track.ClipsDescendants = false
 			Track.Parent = Row
 			Instance.new("UICorner", Track).CornerRadius = UDim.new(1, 0)
 
 			local TrackStroke = Instance.new("UIStroke", Track)
-			TrackStroke.Color = Library.Theme.White
+			TrackStroke.Color = Color3.fromRGB(255, 255, 255)
 			TrackStroke.Transparency = 0.92
 			TrackStroke.Thickness = 1
 
@@ -456,7 +477,7 @@ function Library:CreateWindow(cfg)
 
 			local GlassBg = Instance.new("Frame")
 			GlassBg.Size = UDim2.new(1, 0, 1, 0)
-			GlassBg.BackgroundColor3 = Color3.fromRGB(22, 22, 26)
+			GlassBg.BackgroundColor3 = Color3.fromRGB(20, 20, 24)
 			GlassBg.BackgroundTransparency = 0.2
 			GlassBg.BorderSizePixel = 0
 			GlassBg.Parent = KnobScaler
@@ -466,13 +487,13 @@ function Library:CreateWindow(cfg)
 			GlassSprite.Size = UDim2.new(1, 0, 1, 0)
 			GlassSprite.BackgroundTransparency = 1
 			GlassSprite.ImageTransparency = 0.85
-			GlassSprite.ImageColor3 = Library.Theme.AccentRed
+			GlassSprite.ImageColor3 = Color3.fromRGB(230, 60, 75)
 			GlassSprite.Parent = KnobScaler
 			Instance.new("UICorner", GlassSprite).CornerRadius = UDim.new(1, 0)
 
 			local KnobOverlay = Instance.new("Frame")
 			KnobOverlay.Size = UDim2.new(1, 0, 1, 0)
-			KnobOverlay.BackgroundColor3 = Library.Theme.White
+			KnobOverlay.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 			KnobOverlay.BorderSizePixel = 0
 			KnobOverlay.ZIndex = 5
 			KnobOverlay.Parent = KnobScaler
@@ -508,7 +529,7 @@ function Library:CreateWindow(cfg)
 			local function SetState(newState, animate)
 				isToggled = newState
 				local targetX = isToggled and maxTravelX or PAD
-				local targetColor = isToggled and Library.Theme.AccentGreen or Library.Theme.ToggleOff
+				local targetColor = isToggled and Color3.fromRGB(0, 205, 115) or Color3.fromRGB(34, 34, 44)
 
 				if animate then
 					TweenService:Create(KnobContainer, TweenInfo.new(0.32, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
@@ -522,7 +543,7 @@ function Library:CreateWindow(cfg)
 					Track.BackgroundColor3 = targetColor
 				end
 
-				GlassSprite.ImageColor3 = isToggled and Library.Theme.AccentGreen or Library.Theme.AccentRed
+				GlassSprite.ImageColor3 = isToggled and Color3.fromRGB(0, 205, 115) or Color3.fromRGB(230, 60, 75)
 				TweenService:Create(GlassSprite, TweenInfo.new(0.15, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
 					ImageTransparency = isToggled and 0 or 0.85
 				}):Play()
@@ -543,7 +564,7 @@ function Library:CreateWindow(cfg)
 				startX = input.Position.X
 				startKnobX = KnobContainer.Position.X.Offset
 
-				GlassSprite.ImageColor3 = isToggled and Library.Theme.AccentGreen or Library.Theme.AccentRed
+				GlassSprite.ImageColor3 = isToggled and Color3.fromRGB(0, 205, 115) or Color3.fromRGB(230, 60, 75)
 
 				TweenService:Create(KnobUIScale, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { Scale = 1.28 }):Play()
 				TweenService:Create(KnobOverlay, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { BackgroundTransparency = 0.86 }):Play()
@@ -590,13 +611,6 @@ function Library:CreateWindow(cfg)
 				end)
 			end)
 
-			Row.MouseEnter:Connect(function()
-				TweenService:Create(Row, TweenInfo.new(0.2), { BackgroundColor3 = Library.Theme.CardHover }):Play()
-			end)
-			Row.MouseLeave:Connect(function()
-				TweenService:Create(Row, TweenInfo.new(0.2), { BackgroundColor3 = Library.Theme.CardBg }):Play()
-			end)
-
 			return {
 				Set = function(_, val) SetState(val, true) end,
 				Value = function() return isToggled end
@@ -610,19 +624,20 @@ function Library:CreateWindow(cfg)
 			local callback = opt.Callback
 
 			local ButtonFrame = Instance.new("Frame")
-			ButtonFrame.Size = UDim2.new(1, 0, 0, 56)
-			ButtonFrame.BackgroundColor3 = Library.Theme.CardBg
+			ButtonFrame.Size = UDim2.new(1, 0, 0, 52)
+			ButtonFrame.BackgroundColor3 = Color3.fromRGB(22, 22, 28)
 			ButtonFrame.BorderSizePixel = 0
 			ButtonFrame.ClipsDescendants = true
 			ButtonFrame.Parent = Page
 			Instance.new("UICorner", ButtonFrame).CornerRadius = UDim.new(0, 10)
 
 			local Stroke = Instance.new("UIStroke", ButtonFrame)
-			Stroke.Color = Library.Theme.Border
-			Stroke.Transparency = 0.75
+			Stroke.Color = Color3.fromRGB(255, 255, 255)
+			Stroke.Transparency = 0.94
 			Stroke.Thickness = 1
 
 			local TrailContainer = Instance.new("Frame")
+			TrailContainer.Name = "TrailContainer"
 			TrailContainer.Size = UDim2.new(1, 0, 1, 0)
 			TrailContainer.BackgroundTransparency = 1
 			TrailContainer.ZIndex = 2
@@ -634,14 +649,14 @@ function Library:CreateWindow(cfg)
 			MainGlow.Position = UDim2.new(0.5, 0, 0.5, 0)
 			MainGlow.BackgroundTransparency = 1
 			MainGlow.Image = "rbxassetid://5028857472"
-			MainGlow.ImageColor3 = Library.Theme.White
+			MainGlow.ImageColor3 = Color3.fromRGB(255, 255, 255)
 			MainGlow.ImageTransparency = 1
 			MainGlow.ZIndex = 3
 			MainGlow.Parent = TrailContainer
 
 			local TextContainer = Instance.new("Frame")
 			TextContainer.Size = UDim2.new(1, -60, 1, 0)
-			TextContainer.Position = UDim2.new(0, 14, 0, 0)
+			TextContainer.Position = UDim2.new(0, 12, 0, 0)
 			TextContainer.BackgroundTransparency = 1
 			TextContainer.ZIndex = 5
 			TextContainer.Parent = ButtonFrame
@@ -650,10 +665,10 @@ function Library:CreateWindow(cfg)
 			TitleLabel.Text = text
 			TitleLabel.Font = Enum.Font.GothamMedium
 			TitleLabel.TextSize = 13
-			TitleLabel.TextColor3 = Library.Theme.TextMain
+			TitleLabel.TextColor3 = Color3.fromRGB(240, 240, 245)
 			TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
 			TitleLabel.Size = UDim2.new(1, 0, 0, 18)
-			TitleLabel.Position = UDim2.new(0, 0, 0, (subtext and subtext ~= "") and 10 or 19)
+			TitleLabel.Position = UDim2.new(0, 0, 0, (subtext and subtext ~= "") and 8 or 17)
 			TitleLabel.BackgroundTransparency = 1
 			TitleLabel.ZIndex = 5
 			TitleLabel.Parent = TextContainer
@@ -663,24 +678,14 @@ function Library:CreateWindow(cfg)
 				SubLabel.Text = subtext
 				SubLabel.Font = Enum.Font.Gotham
 				SubLabel.TextSize = 11
-				SubLabel.TextColor3 = Library.Theme.TextSub
+				SubLabel.TextColor3 = Color3.fromRGB(140, 140, 150)
 				SubLabel.TextXAlignment = Enum.TextXAlignment.Left
 				SubLabel.Size = UDim2.new(1, 0, 0, 14)
-				SubLabel.Position = UDim2.new(0, 0, 0, 28)
+				SubLabel.Position = UDim2.new(0, 0, 0, 26)
 				SubLabel.BackgroundTransparency = 1
 				SubLabel.ZIndex = 5
 				SubLabel.Parent = TextContainer
 			end
-
-			local Arrow = Instance.new("ImageLabel")
-			Arrow.Size = UDim2.new(0, 16, 0, 16)
-			Arrow.AnchorPoint = Vector2.new(1, 0.5)
-			Arrow.Position = UDim2.new(1, -16, 0.5, 0)
-			Arrow.BackgroundTransparency = 1
-			Arrow.Image = "rbxassetid://6031091004"
-			Arrow.ImageColor3 = Library.Theme.TextSub
-			Arrow.ZIndex = 5
-			Arrow.Parent = ButtonFrame
 
 			local Hitbox = Instance.new("TextButton")
 			Hitbox.Size = UDim2.new(1, 0, 1, 0)
@@ -700,7 +705,7 @@ function Library:CreateWindow(cfg)
 				droplet.Position = UDim2.new(0, posX, 0, posY)
 				droplet.BackgroundTransparency = 1
 				droplet.Image = "rbxassetid://5028857472"
-				droplet.ImageColor3 = Library.Theme.White
+				droplet.ImageColor3 = Color3.fromRGB(255, 255, 255)
 				droplet.ImageTransparency = 0.5
 				droplet.ZIndex = 2
 				droplet.Parent = TrailContainer
@@ -744,9 +749,6 @@ function Library:CreateWindow(cfg)
 						ImageTransparency = 0.35,
 						Size = UDim2.new(0, 90, 0, 90)
 					}):Play()
-					TweenService:Create(ButtonFrame, TweenInfo.new(0.15, Enum.EasingStyle.Quad), {
-						BackgroundColor3 = Library.Theme.CardHover
-					}):Play()
 				end
 			end)
 
@@ -774,19 +776,7 @@ function Library:CreateWindow(cfg)
 							ImageTransparency = 1,
 							Size = UDim2.new(0, 40, 0, 40)
 						}):Play()
-						TweenService:Create(ButtonFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
-							BackgroundColor3 = Library.Theme.CardBg
-						}):Play()
 					end
-				end
-			end)
-
-			ButtonFrame.MouseEnter:Connect(function()
-				TweenService:Create(ButtonFrame, TweenInfo.new(0.2), { BackgroundColor3 = Library.Theme.CardHover }):Play()
-			end)
-			ButtonFrame.MouseLeave:Connect(function()
-				if not isPressed then
-					TweenService:Create(ButtonFrame, TweenInfo.new(0.2), { BackgroundColor3 = Library.Theme.CardBg }):Play()
 				end
 			end)
 		end
